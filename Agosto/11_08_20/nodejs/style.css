@@ -1,0 +1,23 @@
+.aumentar,
+.diminuir {
+    padding: 1rem 3rem;
+    border: 1px solid rgb(93, 93, 93);
+    border-radius: 0.5rem;
+    cursor: pointer;
+
+    font-size:16px;
+    line-height: 24px;
+    color: palevioletred;; 
+
+}
+
+.aumentar:hover,
+.diminuir:hover{
+    background-color: aquamarine;
+    transition: 0.4s;
+}
+
+.riscado {
+    text-decoration: line-through;
+
+}
