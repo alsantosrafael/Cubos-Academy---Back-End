@@ -11,7 +11,7 @@ const transformarString = (texto, transformadora) => {
 
     return resultado;
 }
-//transforma A em 4 e O em 0
+//transforma A em 4 e O em 0 e E em 3 e I em 1
 const transformaLetras = (texto) => {
     novoTexto = '';
     for(let i = 0; i < texto.length; i++){
