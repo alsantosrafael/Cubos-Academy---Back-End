@@ -1,0 +1,24 @@
+{
+  "name": "15_08_20",
+  "version": "1.0.0",
+  "main": "script.js",
+  "dependencies": {
+    "chalk": "^4.1.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alsantosrafael/class15-sellingSimulation.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alsantosrafael/class15-sellingSimulation/issues"
+  },
+  "homepage": "https://github.com/alsantosrafael/class15-sellingSimulation#readme",
+  "description": ""
+}
