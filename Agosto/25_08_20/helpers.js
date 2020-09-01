@@ -92,7 +92,7 @@ const converteAgencia = (numero) => {
     let ag = ''
 
     if(numero.length !== 5) {
-        console.log('A agência possui cinco dígitos. Tente novamente')
+        console.log('A agência deve possuir cinco dígitos. Tente novamente')
         return false
     } else {
         ag = numero.slice(0,4) + '-' + numero.slice(4,5)
@@ -113,7 +113,7 @@ const converteConta = (numero) => {
 
 }
 
-console.log(converteConta('1234567'))
+//console.log(converteConta('1234567'))
 
 //Questão 06
 module.exports = {

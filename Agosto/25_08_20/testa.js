@@ -11,21 +11,25 @@ const iniciar = ()  => {
             addCorrentista();
         } else if (resposta === '2') {
             rl.question("Insira apenas os números do CPF que deseja buscar: ", (cpf) => {
-                procuraCorrentista(cpf);
+                mostraCorrentista(cpf);
                 iniciar();
             })
 
-        } else if (resposta === 3) {
+        } else if (resposta === '3') {
             rl.question("Insira apenas os números do CPF do usuário que deseja atualizar cadastro: ", (cpf) => {
-                cpf = helper.converteEmCpf(cpf);
                 atualizaCadastro(cpf);
             })
 
-        }else if (resposta === '0'){
+        } else if (resposta === '4') {
+            rl.question("Insira apenas os números do CPF do usuário que deseja deletar o cadastro: ", (cpf) => {
+                deletarCadastro(cpf);
+                iniciar()
+            })
+
+        } else if (resposta === '0'){
             rl.close();
             return console.log('Agradecemos sua visita! Volte sempre! :D')
         } else {
-
             console.log('Comando inválido. Tente novamente!\n')
             iniciar()
         }
@@ -33,15 +37,16 @@ const iniciar = ()  => {
 }
 
 const existeCpf = (cpf) => {
+    let flag = false;
+    cpf = helper.converteEmCpf.cpf;
     correntistas.forEach((correntista) => {
         if(cpf === correntista.cpf) {
             console.log('Sinto muito, esse CPF já foi cadastrado... Tente novamente!\n')
             iniciar()
-            return true;
-        } else{
-            return false;
+            flag = true;
         }
     })
+    return flag
 }
 //Questão 01
 const correntistas = []
@@ -79,7 +84,6 @@ const addCorrentista = (/*nome, cpf, codBanco, ag, conta, saldo*/) => {
                             rl.question('Insira a agência: ', (ag) => {
                                 ag = helper.converteAgencia(ag);
                                 if(ag === false) {
-
                                     iniciar();
                                 } else {
                                     correntista.ag = ag 
@@ -117,44 +121,115 @@ const mostrarCorrentistas = () => {
             console.log(correntista)
         }
     });
+
 }
 
-const mostraCorrentista = (correntista) => {
-    console.log('Encontramos: ')
-    console.log(correntista)
+const mostraCorrentista = (cpf) => {
+    let encontrado = procuraCorrentista(cpf)
+    if(encontrado !== false){
+        console.log('Encontramos: ')
+        console.log(encontrado.correntista)
+    } else {
+        console.log('CPF não encontrado. Correntista não cadastrado.')
+    }
 }
 
 const procuraCorrentista = (cpf) => {
-    let encontrado = [];
+    let encontrado = null;
+    let indice = -1;
     cpf = helper.converteEmCpf(cpf);
-    correntistas.forEach((correntista) => {
+    correntistas.forEach((correntista,index) => {
         if(correntista.cpf === cpf) {
             encontrado = correntista;
-            mostraCorrentista(encontrado)
-        } else {
-            console.log('CPF não cadastrado... tente novamente!\n')
-            iniciar()
-        }
+            indice = index;
+        } 
     })
+    if (encontrado === null) {
+        return false
+    } else {
+        return {
+            correntista: encontrado,
+            indice: indice,
+        }
+    };
+}
+
+const atualizaCadastro = (cpf) => {
+    let correntista = procuraCorrentista(cpf)
+    mostraCorrentista(cpf)
+    if(correntista !== false) {
+        rl.question("Qual dado você gostaria de atualizar?\n[1] Nome\n[2] CPF\n[3] Agência\n[4] Conta\n[0] Sair\n Sua resposta: ", (resposta) => {
+            if(resposta === '1') {
+                rl.question('Insira o nome: ',(nome) => {
+                    correntistas[correntista.indice].nome = nome;
+                    console.log('Nome alterado com sucesso!');
+                    iniciar()
+                })
+            } else if(resposta === '2') {
+                rl.question('Insira o novo cpf: ', (cpf) => {
+                    if(existeCpf(cpf) === false){
+                        correntistas[correntista.indice].cpf = helper.converteEmCpf(cpf);
+                        console.log('Cpf alterado com sucesso!\n');
+                        iniciar()
+                    } else {
+                        console.log('Cpf não pode ser alterado.')
+                        iniciar()
+                    }
+                }
+            )} else if(resposta === '3') {
+                rl.question('Insira a nova agência: ', (ag) => {
+                   ag = helper.converteAgencia(ag);
+                   if(ag === false) {
+                       iniciar();
+                   } else {
+                    correntistas[correntista.indice].ag = ag;
+                    console.log('Agência alterada com sucesso!')
+                    iniciar();
+                   }
+                })
+            } else if(resposta === '4') {
+                rl.question('Insira a nova conta: ', (conta) => {
+                   conta = helper.converteConta(conta)
+                   if(conta === false) {
+                       iniciar();
+                   } else {
+                    correntistas[correntista.indice].conta = conta;
+                    console.log('Conta alterada com sucesso!')
+                    iniciar();
+                   }
+                })
+            } else if (resposta === '0') {
+                console.log('Ok... saindo!\n')
+                iniciar()
+
+            }else {
+                console.log('Comando inválido! Tente novamente.')
+                rl.close()
+                iniciar()
+            }
+        })
+    }
+}
+
+const deletarCadastro = (cpf) => {
+    let encontrado = procuraCorrentista(cpf);
+    if(encontrado !== false) {
+        mostraCorrentista(cpf);
+        rl.question('Deseja mesmo deletar o usuário em questão?\n[1] Sim\n[2] Não\nSua resposta; ', (resp) => {
+            if(resp === '1') {
+
+                correntistas[encontrado.indice].deletado = true;
+                console.log('Usuário deletado com sucesso.\n')
+
+                mostrarCorrentistas()
+                rl.close()
+            }
+        })
+    }
 }
 
 
-//Fazer o atualiza cadastro, deleta usuario, deposito e saque
-
-
-// const atualizaCadastro = (cpf) => {
-//     if(existeCpf(cpf) === false) {
-//         console.log("Usuário não encontrado. Cpf não cadastrado. Tente Novamente.");
-//         iniciar();
-//     } else {
-//         procuraCorrentista(cpf);
-//         rl.question("Qual propriedadade você quer alterar\n[1] Nome\n [2] CPF\n[3] Cod. do Banco\n [4] Agência\n[5] Conta\n[0] Sair\nSua resposta: ", (resposta) => {
-//             if(resposta === '1') {
-//                 rl.question('Insira o nome nome: ')
-//             }
-//         })
-//     }
-// }
-//console.log(addCorrentista('Rafael Almeida', '05380765505', '104', '12345', '1234567', '1000' ))
+//Não consigo reiniciar o sistema depois de excluir um usuário
+//Falta adicionar as funções de saque e depósito!
 
 iniciar()
