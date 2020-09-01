@@ -6,7 +6,7 @@ const rl = readline.createInterface({
 });
 
 const iniciar = ()  => {
-    rl.question("Olá! O que você gostaria de fazer?\n[1] Registrar Correntista\n[2] Procurar Correntista\n[3] Atualizar cadastro\n[4] Excluir cadastro\n[0] Sair\nSua resposta: ", (resposta) => {
+    rl.question("Olá! O que você gostaria de fazer?\n[1] Registrar Correntista\n[2] Procurar Correntista\n[3] Atualizar cadastro\n[4] Excluir cadastro\n[5] Sacar dinheiro\n[6] Depositar dinheiro\n[0] Sair\nSua resposta: ", (resposta) => {
         if(resposta === '1'){
             addCorrentista();
         } else if (resposta === '2') {
@@ -23,10 +23,25 @@ const iniciar = ()  => {
         } else if (resposta === '4') {
             rl.question("Insira apenas os números do CPF do usuário que deseja deletar o cadastro: ", (cpf) => {
                 deletarCadastro(cpf);
-                iniciar()
             })
 
-        } else if (resposta === '0'){
+        } else if (resposta === '5') {
+            rl.question("Insira apenas os números do CPF da conta que deseja sacar dinheiro: ", (cpf) => { 
+                rl.question("Insira agora o código do banco: ", (codBanco) => {
+                    sacarDinheiro(cpf, codBanco);
+                    iniciar()
+                })
+            })
+
+        } else if (resposta === '6') {
+            rl.question("Insira apenas os números do CPF da conta que deseja depositar dinheiro: ", (cpf) => { 
+                rl.question("Insira agora o código do banco: ", (codBanco) => {
+                    depositarDinheiro(cpf, codBanco);
+                    iniciar()
+                })
+            })
+
+        }else if (resposta === '0'){
             rl.close();
             return console.log('Agradecemos sua visita! Volte sempre! :D')
         } else {
@@ -38,7 +53,6 @@ const iniciar = ()  => {
 
 const existeCpf = (cpf) => {
     let flag = false;
-    cpf = helper.converteEmCpf.cpf;
     correntistas.forEach((correntista) => {
         if(cpf === correntista.cpf) {
             console.log('Sinto muito, esse CPF já foi cadastrado... Tente novamente!\n')
@@ -49,7 +63,26 @@ const existeCpf = (cpf) => {
     return flag
 }
 //Questão 01
-const correntistas = []
+const correntistas = [
+    {
+        nome: 'Johanna',
+        cpf: helper.converteEmCpf('33333333333'),
+        codBanco: helper.procuraBanco('104'),
+        ag: helper.converteAgencia('12345'),
+        conta: helper.converteConta('1234567'),
+        saldo: 700,
+        deletado: false
+    },
+    {
+            nome: 'Pedrito',
+            cpf: helper.converteEmCpf('22222222222'),
+            codBanco: helper.procuraBanco('001'),
+            ag: helper.converteAgencia('12345'),
+            conta: helper.converteConta('1234567'),
+            saldo: 500,
+            deletado: false
+    }
+]
 
 const addCorrentista = (/*nome, cpf, codBanco, ag, conta, saldo*/) => {
     console.log("Certo, vamos adicionar um novo correntista!\n")
@@ -78,7 +111,6 @@ const addCorrentista = (/*nome, cpf, codBanco, ag, conta, saldo*/) => {
                         if(codBanco === false) {
                             console.log('Sinto muito. O código informado não possui um banco atrelado. Tente novamente.')
                             iniciar()
-
                         } else {
                             correntista.codBanco = codBanco;
                             rl.question('Insira a agência: ', (ag) => {
@@ -101,7 +133,6 @@ const addCorrentista = (/*nome, cpf, codBanco, ag, conta, saldo*/) => {
                                                 iniciar()
                                             })
                                         }
-
                                     })
                                 }
                             })
@@ -110,7 +141,6 @@ const addCorrentista = (/*nome, cpf, codBanco, ag, conta, saldo*/) => {
                 }
 
             }
-
         })
     })
 }
@@ -121,12 +151,11 @@ const mostrarCorrentistas = () => {
             console.log(correntista)
         }
     });
-
 }
 
 const mostraCorrentista = (cpf) => {
     let encontrado = procuraCorrentista(cpf)
-    if(encontrado !== false){
+    if(encontrado && !encontrado.correntista.deletado){
         console.log('Encontramos: ')
         console.log(encontrado.correntista)
     } else {
@@ -217,19 +246,66 @@ const deletarCadastro = (cpf) => {
         mostraCorrentista(cpf);
         rl.question('Deseja mesmo deletar o usuário em questão?\n[1] Sim\n[2] Não\nSua resposta; ', (resp) => {
             if(resp === '1') {
-
                 correntistas[encontrado.indice].deletado = true;
                 console.log('Usuário deletado com sucesso.\n')
-
                 mostrarCorrentistas()
-                rl.close()
+                iniciar()
+                // rl.close()//Preciso disso aqui?
+            } else if (resp === '2') {
+                console.log('Ok... Saindo para tela inicial\n')
+                iniciar();
+            } else{
+                console.log('Comando inválido. Tente novamente.\n')
+                iniciar();
             }
         })
     }
 }
 
+const sacarDinheiro = (cpf, codBanco) => {
+    const indice = procuraCorrentista(cpf).indice;
+    const correntista = procuraCorrentista(cpf).correntista;
+    console.log(helper.procuraBanco(codBanco))
+    if(indice === false) {
+        console.log('Cpf não cadastrado. Tente novamente.\n');
+        iniciar();
+    } else if(indice !== false && correntista.codBanco === helper.procuraBanco(codBanco)) {
+        rl.question('Qual a quantia que deseja sacar?\n Sua resposta: ', (saque) => {
+            if(saque > correntistas[indice].saldo) {
+                console.log('Saldo insuficiente. Tente novamente.\n');
+                iniciar()
+            } else {
+                console.log('Saque realizado. Confira as notas!\n')
+                correntistas[indice].saldo -= Number(saque);
+                iniciar()
+            }
+        })
 
-//Não consigo reiniciar o sistema depois de excluir um usuário
+    } else {
+        console.log('O código do banco inserido não condiz com o cpf cadastrado. Tente novamente.\n');
+        iniciar()
+    }
+}
+
+const depositarDinheiro = (cpf, codBanco) => {
+    const indice = procuraCorrentista(cpf).indice;
+    const correntista = procuraCorrentista(cpf).correntista;
+    console.log(helper.procuraBanco(codBanco))
+    if(indice === false) {
+        console.log('Cpf não cadastrado. Tente novamente.');
+        iniciar();
+    } else if(indice !== false && correntista.codBanco === helper.procuraBanco(codBanco)) {
+        rl.question('Qual a quantia que deseja depositar?\n Sua resposta: ', (deposito) => {
+            console.log('Deposito realizado. Obrigado por confiar em nosso banco!\n')
+            correntistas[indice].saldo += Number(deposito);
+            iniciar()
+        })
+    } else {
+        console.log('O código do banco inserido não condiz com o cpf cadastrado. Tente novamente.\n');
+        iniciar()
+    }
+}
+
 //Falta adicionar as funções de saque e depósito!
 
 iniciar()
