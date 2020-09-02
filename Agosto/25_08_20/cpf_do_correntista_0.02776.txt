@@ -1,0 +1,8 @@
+|| Caixa Econômica Federal ||
+Extrato bancário de Johanna, CPF: 333.333.333-33
+Agência: 1234-5 Conta-corrente: 123456-7
+*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+|| Movimentações ||
+*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+Tipo  |   Data da Ocorrência  |  Valor Movimentado(R$)
+{registro.tipo} 31-12-2020 21:49 R$200 
