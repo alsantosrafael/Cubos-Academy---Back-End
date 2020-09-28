@@ -1,144 +1,242 @@
-
-//Funções
-const atribuiId = () => { 
-    let id;
-    if(autores.length === 0) {
-        id = '0'
-    } else { 
-        id = (autores[autores.length-1].id + 1).toString()
-    }
-    return id;
-}
-
-const procuraAutor = (id) => {
-    let autorProcurado = null;
-    autores.forEach((autor, index) => {
-        if(autor.id === id && !autor.deletado) {
-            autorProcurado = {
-                autor,
-                index
-            }
-        }
-    })
-    return autorProcurado;
-}
-
-
-//Chamando dependências
 const Koa = require("koa");
 const bodyparser = require("koa-bodyparser");
+const pacAutor = require("./authors.js");
+const pacPost = require("./posts.js");
 
-const server = new Koa ();
-
+const server = new Koa();
 const autores = [];
 const posts = [];
 
-
-//Exemplo de objeto post
-// const post = {
-//     id: '',
-//     titulo: '',
-//     subtitulo: '',
-//     autor: '',//id
-//     publicado: false,
-//     deletado: false,
-// }
 server.use(bodyparser());
-
 server.use((ctx) => {
-    if(ctx.url.includes('/autor')) {
+  if (ctx.url.includes("/autor")) {
+    if (ctx.url.includes("/autor/:")) {
+      const id = Number(ctx.url.split("/:")[1]);
+      const autor = pacAutor.procuraAutor(id, autores);
 
-        if(ctx.url.includes('/autor/:')) {
-            const id = ctx.url.split('/:')[1]
-            const autor = procuraAutor(id)
-
-            if(!autor) {
-                ctx.status = 404;
-                ctx.body = {
-                    status: 'erro',
-                    dados: {
-                        mensagem: 'Conteúdo não encontrado'
-                    }
-                }
-            } else if (autor && ctx.method === 'GET') {
-                    
-                    ctx.status = 200
-                    ctx.body = {
-                        status: 'Sucesso',
-                        dados: {
-                            mensagem:'Conteúdo encontrado!',
-                            dado: autor.autor
-                        }
-                    }
-                } else if(autor && ctx.method === 'DELETE') {
-                    autores[autor.index].deletado = true;
-                    ctx.status = 200
-                    ctx.body = {
-                        status: 'Sucesso',
-                        dados: {
-                            mensagem:'Usuário deletado com sucesso!',
-                            dado: autor.autor
-                        }
-                    }
-                } else if(autor && ctx.method === 'PUT') {
-
-                    autores[autor.index].primeiroNome = ctx.request.body.primNome,
-                    autores[autor.index].ultimoNome= ctx.request.body.ultNome,
-                    autores[autor.index].email = ctx.request.body.email,
-                    autores[autor.index].senha = ctx.request.body.senha, 
-                    ctx.status = 200
-                    ctx.body = {
-                        status: 'Sucesso',
-                        dados: {
-                            mensagem:'Usuário atualizado com sucesso!',
-                            dado: autor.autor
-                        }
-                    }
-                }
-            
-        } else if(ctx.method === 'POST') {
-            const autor = ctx.request.body;
-            if(!autor) {
-                ctx.status = 400
-                ctx.body = {
-                    status: 'Erro',
-                    dados: {
-                        mensagem: 'Pedido mal-formatado'
-                    }
-                }
-            } else {
-                autores.push( { id: atribuiId(),
-                    primeiroNome: ctx.request.body.primNome,
-                    ultimoNome: ctx.request.body.ultNome,
-                    email: ctx.request.body.email,
-                    senha: ctx.request.body.senha,
-                    deletado: false
-                })
-                ctx.status = 201
-                ctx.body = {
-                    status: 'Sucesso',
-                    dados: {
-                        mensagem:'Autor criado com sucesso!'
-                    }
-                }
-            }
+      if (!id) {
+        ctx.status = 400;
+        ctx.body = {
+          status: "Erro",
+          dados: {
+            mensagem: "Requisição mal-formatada.",
+          },
+        };
+      } else {
+        if (!autor) {
+          ctx.status = 404;
+          ctx.body = {
+            status: "Erro",
+            dados: {
+              mensagem: "Autor não encontrado.",
+            },
+          };
+        } else {
+          if (ctx.method === "GET") {
+            ctx.status = 200;
+            ctx.body = {
+              status: "Sucesso",
+              dados: {
+                mensagem: "Autor encontrado",
+                descricao: autor.autor,
+              },
+            };
+          } else if (ctx.method === "DELETE") {
+            autores[autor.index].deletado = true;
+            ctx.status = 200;
+            ctx.body = {
+              status: "Sucesso",
+              dados: {
+                mensagem: "Usuario deletado com sucesso",
+                descricao: autor.autor,
+              },
+            };
+          } else if (ctx.method === "PUT") {
+            //Como colocar uma lógica aqui para se tiver vazio, não alterar?
+            (autores[autor.index].primNome = !ctx.request.body.primNome
+              ? autores[autor.index].primNome
+              : ctx.request.body.primNome),
+              (autores[autor.index].ultNome = !ctx.request.body.ultNome
+                ? autores[autor.index].ultNome
+                : ctx.request.body.ultNome),
+              (autores[autor.index].email = !ctx.request.body.email
+                ? autores[autor.index].email
+                : ctx.request.body.email),
+              (autores[autor.index].senha = !ctx.request.body.senha
+                ? autores[autor.index].senha
+                : ctx.request.body.senha);
+            ctx.status = 200;
+            ctx.body = {
+              status: "Sucesso",
+              dados: {
+                mensagem: "Autor alterado com sucesso",
+                descricao: autores[autor.index],
+              },
+            };
+          } else {
+            ctx.status = 400;
+            ctx.body = {
+              status: "Erro",
+              dados: {
+                mensagem: "Requisição mal-formatada.",
+              },
+            };
+          }
         }
-
+      }
+    } else if (ctx.method === "POST") {
+      autores.push({
+        id: Number(pacAutor.atribuiId(autores)),
+        primNome: ctx.request.body.primNome,
+        ultNome: ctx.request.body.ultNome,
+        email: ctx.request.body.email,
+        senha: ctx.request.body.senha,
+      });
+      ctx.status = 201;
+      ctx.body = {
+        status: "Sucesso",
+        dados: {
+          mensagem: "Autor criado com sucesso.",
+          descricao: autores[autores.length - 1],
+        },
+      };
     } else {
-        console.log('parou aqui')
+      ctx.status = 400;
+      ctx.body = {
+        status: "Erro",
+        dados: {
+          mensagem: "Requisição mal-formatada.",
+        },
+      };
+    }
+  } else if (ctx.url.includes("/posts")) {
+    if (ctx.url.includes("/posts/:")) {
+      const idPost = Number(ctx.url.split("/:")[1]);
+      let post = pacPost.encontraPost(idPost, posts);
+      let autorDoPost = pacAutor.procuraAutor(Number(post.autor), autores);
+
+      if (!idPost) {
+        console.log(post);
+        ctx.status = 400;
+        ctx.body = {
+          status: "Erro",
+          dados: {
+            mensagem: "Requisição mal-formatada.",
+          },
+        };
+      } else {
+        if (!post || posts.length === 0) {
+          ctx.status = 404;
+          ctx.body = {
+            status: "Erro",
+            dados: {
+              mensagem: "Post não encontrado.",
+            },
+          };
+        } else {
+          if (!autorDoPost) {
+            ctx.status = 404;
+            ctx.body = {
+              status: "Erro",
+              dados: {
+                mensagem: "Autor não encontrado.",
+              },
+            };
+          } else {
+            if (ctx.method === "GET") {
+              ctx.status = 200;
+              ctx.body = {
+                status: "Sucesso",
+                dados: {
+                  mensagem: "Post encontrado com sucesso",
+                  descricao: post,
+                },
+              };
+            }
+          }
+        }
+      }
+    } else if (ctx.method === "POST") {
+      const id = Number(ctx.request.body.autor);
+      const autor = pacAutor.procuraAutor(id, autores);
+
+      if (!id) {
+        ctx.status = 400;
+        ctx.body = {
+          status: "Erro",
+          dados: {
+            mensagem: "Requisição mal-formatada.",
+          },
+        };
+      } else {
+        if (!autor) {
+          ctx.status = 404;
+          ctx.body = {
+            status: "Erro",
+            dados: {
+              mensagem: "Autor não encontrado.",
+            },
+          };
+        } else {
+          posts.push({
+            id: pacPost.atribuiId(posts),
+            titulo: ctx.request.body.titulo,
+            subtitulo: ctx.request.body.subtitulo,
+            autor: ctx.request.body.autor,
+            postado: true,
+            deletado: false,
+          });
+          ctx.status = 201;
+          ctx.body = {
+            status: "Sucesso",
+            dados: {
+              mensagem: "Post criado com sucesso.",
+              descricao: posts[posts.length - 1],
+            },
+          };
+        }
+      }
+    } else if (ctx.method === "GET") {
+      const postagens = pacPost.organizaPostagens(posts)
+      if(postagens.length === 0) {
         ctx.status = 404;
         ctx.body = {
-            status: 'erro',
-            dados: {
-                mensagem: 'Conteúdo não encontrado'
-            }
-        }
-    }
+          status: "Erro",
+          dados: {
+            mensagem: "Posts não encontrados.",
+          },
+        };
 
-})
+
+      } else {
+        ctx.status = 200;
+        ctx.body = {
+          status: "Sucesso",
+          dados: {
+            mensagem: "Post encontrado com sucesso",
+            descricao: postagens
+          },
+        };
+
+      }
+
+    } else if (ctx.method === "DELETE") {
+
+      
+      
+    }
+  } else {
+    ctx.status = 404;
+    ctx.body = {
+      status: "Erro",
+      dados: {
+        mensagem: "Autor não encontrado.",
+      },
+    };
+  }
+
+});
 
 server.listen(8081, () => {
-    console.log("Servidor rodando na porta 8081!")
-})
-
-Diário: 'Toda a parte de autor está ok. falta psot e outras coisinhas '
+  console.log("Server rodando na porta 8081.");
+});
